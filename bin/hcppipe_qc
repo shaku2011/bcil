@@ -353,7 +353,7 @@ if [[ $Struc = ON && ! $(ls $StudyFolder/$Subject/MNINonLinear/*spec 2> /dev/nul
 			# Fieldmap and agnitude vs T1w_acpc to check registration
 			$FSLDIR/bin/fslmaths $T2wToT1wDir/FieldMap2T1w_acpc -thr 0 $T2wToT1wDir/FieldMap2T1w_acpc_p
 			$FSLDIR/bin/fslmaths $T2wToT1wDir/FieldMap2T1w_acpc -uthr 0 -mul -1 $T2wToT1wDir/FieldMap2T1w_acpc_m			
-			$FSLDIR/bin/overlay 1 0 $T2wToT1wDir/T1w_acpc.nii.gz -s 2 -a $T2wToT1wDir/FieldMap2T1w_acpc_p.nii.gz .1 500 $T2wToT1wDir/FieldMap2T1w_acpc_m.nii.gz .1 500 $T2wToT1wDir/FieldMap2T1w_acpc_overlay.nii.gz
+			$FSLDIR/bin/overlay 1 0 $T2wToT1wDir/T1w_acpc.nii.gz -s 2 -a $T2wToT1wDir/FieldMap2T1w_acpc_p .1 500 $T2wToT1wDir/FieldMap2T1w_acpc_m .1 500 $T2wToT1wDir/FieldMap2T1w_acpc_overlay.nii.gz
 			$FSLDIR/bin/slicer $T2wToT1wDir/FieldMap2T1w_acpc_overlay.nii.gz -a ${reportdir}/FieldMap2T1w_acpc_overlay.png
 				if [ -e ${FieldMapDir}/../Magnitude_brain_warppedT1w2T1w_acpc.nii.gz ] ; then #SE fieldmap
 				Mag2T1w=${FieldMapDir}/../Magnitude_brain_warppedT1w2T1w_acpc.nii.gz
@@ -1219,7 +1219,7 @@ if [[ $Func = ON ]] ; then
 			$FSLDIR/bin/applywarp -i ${FieldMapDir}/TopupField.nii.gz -r $DistCorDir/T1w_acpc_dc_restore_brain.nii.gz --premat=$DistCorDir/fMRI2str.mat -o $DistCorDir/FieldMap2T1w_acpc.nii.gz
 			$FSLDIR/bin/fslmaths $DistCorDir/FieldMap2T1w_acpc -thr 0 $DistCorDir/FieldMap2T1w_acpc_p
 			$FSLDIR/bin/fslmaths $DistCorDir/FieldMap2T1w_acpc -uthr 0 -mul -1 $DistCorDir/FieldMap2T1w_acpc_m			
-			$FSLDIR/bin/overlay 1 0 $StudyFolder/$Subject/T1w/T1w_acpc.nii.gz -a $DistCorDir/FieldMap2T1w_acpc_p.nii.gz .0001 500 $DistCorDir/FieldMap2T1w_acpc_m.nii.gz .0001 500 $DistCorDir/FieldMap2T1w_acpc_overlay.nii.gz
+			$FSLDIR/bin/overlay 1 0 $StudyFolder/$Subject/T1w/T1w_acpc.nii.gz -a $DistCorDir/FieldMap2T1w_acpc_p .0001 500 $DistCorDir/FieldMap2T1w_acpc_m .0001 500 $DistCorDir/FieldMap2T1w_acpc_overlay.nii.gz
 			$FSLDIR/bin/slicer $DistCorDir/FieldMap2T1w_acpc_overlay.nii.gz -a ${reportdir}/FieldMap2T1w_acpc_overlay.png			
 			$FSLDIR/bin/applywarp -i ${FieldMapDir}/Magnitude.nii.gz -r $DistCorDir/T1w_acpc_dc_restore_brain.nii.gz --premat=$DistCorDir/fMRI2str.mat -o $DistCorDir/Mag2T1w_acpc.nii.gz
 			${FSLDIR}/bin/slicer $DistCorDir/Mag2T1w_acpc.nii.gz $StudyFolder/$Subject/T1w/T1w_acpc.nii.gz -a ${reportdir}/MagT1w_acpc.png
