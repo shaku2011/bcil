@@ -6,54 +6,58 @@ set -e
 
 VERSION=0.1
 
-BCILDIR=$(cd $(dirname $0); cd ..; pwd)
+BCILDIR=$(
+	cd $(dirname $0)
+	cd ..
+	pwd
+)
 source $BCILDIR/bcilconf/settings.sh
 
 # Usage
-Usage () {
-echo ""
-echo " Usage: hcppipe_gqc <Data Folder> <Protocol1 Folder> <Protocol1_Subj1>@..@<Protocol1_SubjI> .. <ProtocolN Folder> <ProtocolN_Subj1>@..@<ProtocolN_SubjJ>"
-echo ""
-echo " Example:"
-echo ""
-echo "   hcppipe_gqc /mnt/data HARP HARP_Subj1@HARP_Subj2 CRHD CRHD_Subj1@CCRHD_Subj2 UKB UKB_Subj@UKB_Subj2 "
-echo ""
-echo " , where folder structure should be <Group>/<Protocols>/<Subjs> as follows:"
-echo ""
-echo "   /mnt/data"
-echo "    ├── HARP"
-echo "    │   ├── HARP_Subj1"
-echo "    │   └── HARP_Subj2"
-echo "    ├── CRHD"
-echo "    │   ├── CRHD_Subj1"
-echo "    │   └── CRHD_Subj2"
-echo "    └── UKB"
-echo "        ├── UKB_Subj1"
-echo "        └── UKB_Subj2"
-echo ""
-echo " Optional arguments:"
-echo "  -o <output folder name> : default is 'QA' in <Study Folder>" 
-echo ""
-echo " You need to have all the subject folders in the same <Study Folder>, so that the QC"
-echo " data and output report html pages can be linked to the subjects' QA folders. You may"
-echo " want to create soft links of subjects' folders in customly created <Study Folder>."
-echo ""
-exit 1;
+Usage() {
+	echo ""
+	echo " Usage: hcppipe_gqc <Data Folder> <Protocol1 Folder> <Protocol1_Subj1>@..@<Protocol1_SubjI> .. <ProtocolN Folder> <ProtocolN_Subj1>@..@<ProtocolN_SubjJ>"
+	echo ""
+	echo " Example:"
+	echo ""
+	echo "   hcppipe_gqc /mnt/data HARP HARP_Subj1@HARP_Subj2 CRHD CRHD_Subj1@CCRHD_Subj2 UKB UKB_Subj@UKB_Subj2 "
+	echo ""
+	echo " , where folder structure should be <Group>/<Protocols>/<Subjs> as follows:"
+	echo ""
+	echo "   /mnt/data"
+	echo "    ├── HARP"
+	echo "    │   ├── HARP_Subj1"
+	echo "    │   └── HARP_Subj2"
+	echo "    ├── CRHD"
+	echo "    │   ├── CRHD_Subj1"
+	echo "    │   └── CRHD_Subj2"
+	echo "    └── UKB"
+	echo "        ├── UKB_Subj1"
+	echo "        └── UKB_Subj2"
+	echo ""
+	echo " Optional arguments:"
+	echo "  -o <output folder name> : default is 'QA' in <Study Folder>"
+	echo ""
+	echo " You need to have all the subject folders in the same <Study Folder>, so that the QC"
+	echo " data and output report html pages can be linked to the subjects' QA folders. You may"
+	echo " want to create soft links of subjects' folders in customly created <Study Folder>."
+	echo ""
+	exit 1
 }
 [[ $3 = "" ]] && Usage
- 
+
 GroupStudyFolder="$1"
 shift
 ProtocolsList=""
 SubjectsList=""
-while [[ $2 != "" ]] ; do
+while [[ $2 != "" ]]; do
 	ProtocolsList+=" $1"
 	SubjectsList+=" $2"
-	shift 2;
+	shift 2
 done
 
 OutputFolder=$GroupStudyFolder/QC
-if [[ $4 = -o ]] ; then
+if [[ $4 = -o ]]; then
 	OutputFolder="$GroupStudyFolder/$5"
 fi
 
@@ -62,22 +66,22 @@ echo "SubjectsList:  $SubjectsList"
 echo "ProtocolsList:  $ProtocolsList"
 echo "OutputFolder:  $OutputFolder"
 
-if [[ $(echo $ProtocolsList | awk '{print NF}') != $(echo $SubjectsList | awk '{print NF}') ]] ; then
+if [[ $(echo $ProtocolsList | awk '{print NF}') != $(echo $SubjectsList | awk '{print NF}') ]]; then
 	echo "ERROR: number of ProtocolList is not same as number of protocols separated by SubjectsLIst"
-	exit 1;
+	exit 1
 fi
 
 mkdir -p $OutputFolder/report
 mkdir -p $OutputFolder/.files
 mkdir -p $OutputFolder/logs
-echo "$(date -R) - $0 $@" >> $OutputFolder/logs/commands.log
+echo "$(date -R) - $0 $@" >>$OutputFolder/logs/commands.log
 
 # copy jss files
 cp ${FSLDIR}/doc/fsl.css ${BCILDIR}/doc/images/BCIL_1.png ${BCILDIR}/doc/images/fsl-logo-x2.png ${BCILDIR}/doc/images/hcplogo1.jpg ${BCILDIR}/doc/images/freesurfer.png ${BCILDIR}/doc/images/bmb.png ${BCILDIR}/doc/images/favicon.ico ${BCILDIR}/doc/hcppipe_qc/magnifier.css ${BCILDIR}/doc/hcppipe_qc/magnifier.js ${BCILDIR}/doc/hcppipe_qc/jquery.min.js ${BCILDIR}/doc/hcppipe_qc/lightbox.css ${BCILDIR}/doc/hcppipe_qc/lightbox.min.js $OutputFolder/.files/
 
 # Create index html
 
-cat << EOF > $OutputFolder/index.html
+cat <<EOF >$OutputFolder/index.html
 <HTML>
  <HEAD>
    <link REL="stylesheet" TYPE="text/css" href=".files/fsl.css">
@@ -140,20 +144,20 @@ cat << EOF > $OutputFolder/index.html
   <option value="">Individual study</option>
 EOF
 
-i=1;
-while [ $i -le $(echo $ProtocolsList | awk '{print NF}') ] ; do
+i=1
+while [ $i -le $(echo $ProtocolsList | awk '{print NF}') ]; do
 	Protocol=$(echo $ProtocolsList | cut -d ' ' -f $i)
-	echo "   <optgroup label=\"$Protocol\">" 
-	for Subjects in $(echo $SubjectsList | cut -d ' ' -f $i) ; do
-		for Subject in $(echo $Subjects | sed -e 's/@/ /g') ; do 
+	echo "   <optgroup label=\"$Protocol\">"
+	for Subjects in $(echo $SubjectsList | cut -d ' ' -f $i); do
+		for Subject in $(echo $Subjects | sed -e 's/@/ /g'); do
 			echo "   <option value=\"../$Protocol/${Subject}/QC/report.html\">${Subject}</option>"
 		done
 	done
 	echo "   </optgroup>"
 	i=$((i + 1))
-done >> $OutputFolder/index.html
+done >>$OutputFolder/index.html
 
-cat << EOF >> $OutputFolder/index.html
+cat <<EOF >>$OutputFolder/index.html
    </select>
    </form>
   </center>
@@ -170,36 +174,35 @@ EOF
 
 # Creating protocol and subject list file
 echo "Creating protocol and subject list"
-i=1;
-echo "Protocol	SubjID	Subject" > $GroupStudyFolder/QC/report/Protocol-Subjects-List.txt
-while [ $i -le $(echo $ProtocolsList | awk '{print NF}') ] ; do
+i=1
+echo "Protocol	SubjID	Subject" >$GroupStudyFolder/QC/report/Protocol-Subjects-List.txt
+while [ $i -le $(echo $ProtocolsList | awk '{print NF}') ]; do
 	Protocol=$(echo $ProtocolsList | cut -d ' ' -f $i)
-	for Subjects in $(echo $SubjectsList | cut -d ' ' -f $i) ; do
+	for Subjects in $(echo $SubjectsList | cut -d ' ' -f $i); do
 		SubjID=1
-		for Subject in $(echo $Subjects | sed -e 's/@/ /g'); do 
+		for Subject in $(echo $Subjects | sed -e 's/@/ /g'); do
 			SubjID=$($FSLDIR/bin/zeropad $SubjID 4)
-			echo "$Protocol	$SubjID	$Subject" >> $OutputFolder/report/Protocol-Subjects-List.txt
+			echo "$Protocol	$SubjID	$Subject" >>$OutputFolder/report/Protocol-Subjects-List.txt
 			SubjID=$(expr $SubjID + 1)
 		done
 	done
 	i=$(expr $i + 1)
-done 
-
+done
 
 # Create statistical quality control pages
 
-Struc=$(for i in $(cat $OutputFolder/report/Protocol-Subjects-List.txt | awk 'NR>1 {printf "%s/%s ",$1,$3}') ; do if [ -e $GroupStudyFolder/$i/QC/Structure/report.html ] ; then echo $i; fi; done)
+Struc=$(for i in $(cat $OutputFolder/report/Protocol-Subjects-List.txt | awk 'NR>1 {printf "%s/%s ",$1,$3}'); do if [ -e $GroupStudyFolder/$i/QC/Structure/report.html ]; then echo $i; fi; done)
 
 echo "Creating Structure report.html"
 # echo Struc: $Struc
 
-if [[ $Struc != "" ]] ; then
+if [[ $Struc != "" ]]; then
 
-	if [ -d $OutputFolder/Structure ] ; then rm -rf $OutputFolder/Structure ; fi
+	if [ -d $OutputFolder/Structure ]; then rm -rf $OutputFolder/Structure; fi
 	mkdir -p $OutputFolder/Structure/report
 	reporthtml=$OutputFolder/Structure/report.html
 
-cat << EOF > $reporthtml
+	cat <<EOF >$reporthtml
 <HTML>
  <HEAD>
    <link REL="stylesheet" TYPE="text/css" href=".files/fsl.css">
@@ -261,54 +264,53 @@ EOF
 
 		# Not used variable
 		# LEFT-CEREBRAL-CORTEX_MEAN@T1w_acpc_dc_stats.tsv@2@-x RIGHT-CEREBRAL-CORTEX_MEAN@T1w_acpc_dc_stats.tsv@2@-x LEFT-CEREBRAL-WHITE-MATTER_MEAN@T1w_acpc_dc_stats.tsv@2@-x RIGHT-CEREBRAL-WHITE-MATTER_MEAN@T1w_acpc_dc_stats.tsv@2@-x LEFT-LATERAL-VENTRICLE_MEAN@T1w_acpc_dc_stats.tsv@2@-x RIGHT-LATERAL-VENTRICLE_MEAN@T1w_acpc_dc_stats.tsv@2@-x LEFT-CEREBRAL-CORTEX_MEAN@T2w_acpc_dc_stats.tsv@2@-x RIGHT-CEREBRAL-CORTEX_MEAN@T2w_acpc_dc_stats.tsv@2@-x LEFT-CEREBRAL-WHITE-MATTER_MEAN@T2w_acpc_dc_stats.tsv@2@-x RIGHT-CEREBRAL-WHITE-MATTER_MEAN@T2w_acpc_dc_stats.tsv@2@-x LEFT-LATERAL-VENTRICLE_MEAN@T2w_acpc_dc_stats.tsv@2@-x RIGHT-LATERAL-VENTRICLE_MEAN@T2w_acpc_dc_stats.tsv@2@-x
-		
+
 		varkey=$(echo $varset | cut -d '@' -f 1)
 		file=$(echo $varset | cut -d '@' -f 2)
 		col=$(echo $varset | cut -d '@' -f 3)
 		opt=$(echo $varset | cut -d '@' -f 4)
 		varname="$(echo $varset | cut -d '@' -f 2 | sed -e 's/.tsv//g')_$(echo $varset | cut -d '@' -f 1)"
 
-		echo "Class,SubjectID,$varname,SubjectFolder" > $OutputFolder/Structure/${varname}.csv 
-	
-		i=1;
+		echo "Class,SubjectID,$varname,SubjectFolder" >$OutputFolder/Structure/${varname}.csv
+
+		i=1
 		SubjID=1
-		while [ $i -le $(echo $ProtocolsList | awk '{print NF}') ] ; do
+		while [ $i -le $(echo $ProtocolsList | awk '{print NF}') ]; do
 			Protocol=$(echo $ProtocolsList | cut -d ' ' -f $i)
-			for Subjects in $(echo $SubjectsList | cut -d ' ' -f $i) ; do
-				for Subject in $(echo $Subjects | sed -e 's/@/ /g') ; do
+			for Subjects in $(echo $SubjectsList | cut -d ' ' -f $i); do
+				for Subject in $(echo $Subjects | sed -e 's/@/ /g'); do
 					SubjID=$($FSLDIR/bin/zeropad $SubjID 4)
 					# find value of $variable
 					val=$(cat $GroupStudyFolder/$Protocol/$Subject/QC/Structure/$file | grep $varkey | awk -F "\t" '{print $'$col'}')
-					echo "${Protocol},${SubjID},${val},${Subject}" >> $OutputFolder/Structure/${varname}.csv
+					echo "${Protocol},${SubjID},${val},${Subject}" >>$OutputFolder/Structure/${varname}.csv
 					SubjID=$(expr $SubjID + 1)
-				done  
+				done
 			done
 			i=$(expr $i + 1)
-		done 
-		
+		done
+
 		${BCILDIR}/bin/bcil_qcplot.R $OutputFolder/Structure/${varname}.csv $OutputFolder/Structure/report/qcplot_${varname}.png $opt
-		echo "  <B>${varname}</B><BR><img src=\"./report/qcplot_${varname}.png\" alt=\"qc_plot_${variable}\" width=\"1850\"><BR><a href=\"./${varname}.csv\">${varname}.csv</a><hr>" >> $reporthtml
+		echo "  <B>${varname}</B><BR><img src=\"./report/qcplot_${varname}.png\" alt=\"qc_plot_${variable}\" width=\"1850\"><BR><a href=\"./${varname}.csv\">${varname}.csv</a><hr>" >>$reporthtml
 
 	done
-	echo "</div><BR><BR><BR><BR></BODY></HTML>" >> $reporthtml
+	echo "</div><BR><BR><BR><BR></BODY></HTML>" >>$reporthtml
 
 fi
 
+# Create Function
 
-# Create Function 
-
-Func=$(for i in $(cat $OutputFolder/report/Protocol-Subjects-List.txt | awk 'NR>1 {printf "%s/%s ",$1,$3}') ; do if [ -e $GroupStudyFolder/$i/QC/Function/report.html ] ; then echo $i; fi; done)
+Func=$(for i in $(cat $OutputFolder/report/Protocol-Subjects-List.txt | awk 'NR>1 {printf "%s/%s ",$1,$3}'); do if [ -e $GroupStudyFolder/$i/QC/Function/report.html ]; then echo $i; fi; done)
 
 echo "Creating Function report.html"
 # echo Func: $Func
 
-if [[ $Func != "" ]] ; then
+if [[ $Func != "" ]]; then
 
-	if [ -d $OutputFolder/Function ] ; then rm -rf $OutputFolder/Function ; fi
+	if [ -d $OutputFolder/Function ]; then rm -rf $OutputFolder/Function; fi
 	mkdir -p $OutputFolder/Function/report
 	reporthtml=$OutputFolder/Function/report.html
 
-cat << EOF > $reporthtml
+	cat <<EOF >$reporthtml
 <HTML>
  <HEAD>
    <link REL="stylesheet" TYPE="text/css" href=".files/fsl.css">
@@ -365,65 +367,63 @@ cat << EOF > $reporthtml
   <div class="stripe">
 EOF
 
-  # for i in QC_sub90_0921/*/QC/Function/run12_PA_AP_stats.tsv ; do mv  $i $(echo $i | sed -e 's/_stats.tsv/\/RestingStateStats.tsv/g'); done
+	# for i in QC_sub90_0921/*/QC/Function/run12_PA_AP_stats.tsv ; do mv  $i $(echo $i | sed -e 's/_stats.tsv/\/RestingStateStats.tsv/g'); done
 
-	for varset in Movement_AbsoluteRMS_mean@Movement_AbsoluteRMS_mean.txt@1@1@-x Movement_RelativeRMS_mean@Movement_RelativeRMS_mean.txt@1@1@-x Q2@Movement_Regressors_FD_stats.txt@2@3@-x PercOutlier@ICA-FIX_stats.tsv@2@3@-x Dvar-SvarDivergence@ICA-FIX_stats.tsv@3@3@-x AutocorrCoeffMedian@ICA-FIX_stats.tsv@4@3@-x FSL_BBR@EPI2T1w.mincost.tsv@2@1@-x FreeSurfer_BBR@EPI2T1w.mincost.tsv@2@2@-x IQR@Fieldmap_stats.tsv@2@7@-x TSNR@RestingStateStats.tsv@2@8@-x MotionVarRatio@RestingStateStats.tsv@2@26@-x StructNoiseVarRatio@RestingStateStats.tsv@2@27@-x BOLDVarRatio@RestingStateStats.tsv@2@28@-x UnstructNoiseVarRatio@RestingStateStats.tsv@2@29@-x; do 
-		
+	for varset in Movement_AbsoluteRMS_mean@Movement_AbsoluteRMS_mean.txt@1@1@-x Movement_RelativeRMS_mean@Movement_RelativeRMS_mean.txt@1@1@-x Q2@Movement_Regressors_FD_stats.txt@2@3@-x PercOutlier@ICA-FIX_stats.tsv@2@3@-x Dvar-SvarDivergence@ICA-FIX_stats.tsv@3@3@-x AutocorrCoeffMedian@ICA-FIX_stats.tsv@4@3@-x FSL_BBR@EPI2T1w.mincost.tsv@2@1@-x FreeSurfer_BBR@EPI2T1w.mincost.tsv@2@2@-x IQR@Fieldmap_stats.tsv@2@7@-x TSNR@RestingStateStats.tsv@2@8@-x MotionVarRatio@RestingStateStats.tsv@2@26@-x StructNoiseVarRatio@RestingStateStats.tsv@2@27@-x BOLDVarRatio@RestingStateStats.tsv@2@28@-x UnstructNoiseVarRatio@RestingStateStats.tsv@2@29@-x; do
+
 		# Not used variables
-		# NumSignal@RestingStateStats.tsv@2@2@-c NumNoise@RestingStateStats.tsv@2@3@-c NumTotal@RestingStateStats.tsv@2@4@-c 
+		# NumSignal@RestingStateStats.tsv@2@2@-c NumNoise@RestingStateStats.tsv@2@3@-c NumTotal@RestingStateStats.tsv@2@4@-c
 		# CNR@RestingStateStats.tsv@2@16@-x HighPassVarRatio@RestingStateStats.tsv@2@25@-x MotionVar@RestingStateStats.tsv@2@11@-x StructNoiseVar@RestingStateStats.tsv@2@12@-x BOLDVar@RestingStateStats.tsv@2@13@-x UnstructNoiseVar@RestingStateStats.tsv@2@14@-x
-		
+
 		varkey=$(echo $varset | cut -d '@' -f 1)
 		file=$(echo $varset | cut -d '@' -f 2)
 		col=$(echo $varset | cut -d '@' -f 3)
-		row=$(echo $varset | cut -d '@' -f 4)		
+		row=$(echo $varset | cut -d '@' -f 4)
 		opt=$(echo $varset | cut -d '@' -f 5)
 		varname="$(echo $file | sed -e 's/.tsv//g' | sed -e 's/.txt//g')_${varkey}"
-		
-		if [ $file != RestingStateStats.tsv ] ; then
-			echo "Class,ScanID,$varname,SubjectFolder,fmriname" > $OutputFolder/Function/${varname}.csv 
+
+		if [ $file != RestingStateStats.tsv ]; then
+			echo "Class,ScanID,$varname,SubjectFolder,fmriname" >$OutputFolder/Function/${varname}.csv
 		else
-			echo "Class,StudyID,$varname,SubjectFolder" > $OutputFolder/Function/${varname}.csv
+			echo "Class,StudyID,$varname,SubjectFolder" >$OutputFolder/Function/${varname}.csv
 		fi
-		i=1;
+		i=1
 		ScanID=1
-		while [ $i -le $(echo $ProtocolsList | awk '{print NF}') ] ; do
+		while [ $i -le $(echo $ProtocolsList | awk '{print NF}') ]; do
 			Protocol=$(echo $ProtocolsList | cut -d ' ' -f $i)
-			for Subjects in $(echo $SubjectsList | cut -d ' ' -f $i) ; do
-				for Subject in $(echo $Subjects | sed -e 's/@/ /g') ; do
+			for Subjects in $(echo $SubjectsList | cut -d ' ' -f $i); do
+				for Subject in $(echo $Subjects | sed -e 's/@/ /g'); do
 					ScanID=$($FSLDIR/bin/zeropad $ScanID 4)
 					# find value of $variable
-					for j in $GroupStudyFolder/$Protocol/$Subject/QC/Function/*/$file ; do
+					for j in $GroupStudyFolder/$Protocol/$Subject/QC/Function/*/$file; do
 						pathtofmri=$(dirname $j)
 						fmriname=$(basename $pathtofmri)
 						val=$(cat $GroupStudyFolder/$Protocol/$Subject/QC/Function/${fmriname}/$file | awk -F "\t" 'NR=='$row' {print $'$col'}')
-						if [ $file != RestingStateStats.tsv ] ; then
-							echo "${Protocol},${ScanID},${val},${Subject},${fmriname}" >> $OutputFolder/Function/${varname}.csv
+						if [ $file != RestingStateStats.tsv ]; then
+							echo "${Protocol},${ScanID},${val},${Subject},${fmriname}" >>$OutputFolder/Function/${varname}.csv
 						else
-							echo "${Protocol},${ScanID},${val},${Subject}" >> $OutputFolder/Function/${varname}.csv						
+							echo "${Protocol},${ScanID},${val},${Subject}" >>$OutputFolder/Function/${varname}.csv
 						fi
 						ScanID=$(expr $ScanID + 1)
 					done
 				done
 			done
 			i=$(expr $i + 1)
-		done 
-		
+		done
+
 		${BCILDIR}/bin/bcil_qcplot.R $OutputFolder/Function/${varname}.csv $OutputFolder/Function/report/qcplot_${varname}.png $opt
-		echo "  <B>${varname}</B><BR><img src=\"./report/qcplot_${varname}.png\" alt=\"qc_plot_${variable}\" width=\"1850\"><BR><a href=\"./${varname}.csv\">${varname}.csv</a><hr>" >> $reporthtml
+		echo "  <B>${varname}</B><BR><img src=\"./report/qcplot_${varname}.png\" alt=\"qc_plot_${variable}\" width=\"1850\"><BR><a href=\"./${varname}.csv\">${varname}.csv</a><hr>" >>$reporthtml
 
 	done
-	echo "</div><BR><BR><BR><BR></BODY></HTML>" >> $reporthtml
+	echo "</div><BR><BR><BR><BR></BODY></HTML>" >>$reporthtml
 
 fi
-
-
 
 # Create Group QC report.html
 reportdir=$OutputFolder/report
 reporthtml=$OutputFolder/report.html
 
-cat <<EOF > $reporthtml 
+cat <<EOF >$reporthtml
 <HTML>
  <HEAD>
    <link REL="stylesheet" TYPE="text/css" href="../.files/fsl.css">
@@ -475,14 +475,14 @@ cat <<EOF > $reporthtml
    <B><span style="color:gray">Group QC Charts - </span></B>
 EOF
 
-for Modality in Structure Function Diffusion Tractography; do 
-	if [ -e ${OutputFolder}/${Modality}/report.html ] ; then
-		echo "    <a target=\"Change\" href=\"./${Modality}/report.html\" class=\"button\">${Modality}</a>" >> $reporthtml 
+for Modality in Structure Function Diffusion Tractography; do
+	if [ -e ${OutputFolder}/${Modality}/report.html ]; then
+		echo "    <a target=\"Change\" href=\"./${Modality}/report.html\" class=\"button\">${Modality}</a>" >>$reporthtml
 	else
-		echo "    <a class=\"button disabled\">${Modality}</a>" >> $reporthtml 
+		echo "    <a class=\"button disabled\">${Modality}</a>" >>$reporthtml
 	fi
 done
-cat <<EOF >> $reporthtml 
+cat <<EOF >>$reporthtml
    </div>
   </center>
   <iframe frameborder="0" style="overflow:hidden; height:100%; width:100%" class="fullheight" name="Change" scrolling="auto"></iframe>
