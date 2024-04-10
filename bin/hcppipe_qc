@@ -754,7 +754,7 @@ if [[ $Struc = ON && ! $(ls $StudyFolder/$Subject/MNINonLinear/*spec 2>/dev/null
 	dsize=($(echo ${size[@]} | awk '{printf "%d %d",$1*2,$2*2}'))
 	echo "<div class=\"magnifier\" style=\"width: ${size[0]}px;height:${size[1]}px\"><div class=\"maglens\" style=\"width:240px; height:150px\"><img src=\"./report/StructuralQC_${i}.jpg\" class=\"maglarge\" style=\"width:${dsize[0]}px;height:${dsize[1]}px\"/></div></div><BR>" >>$reporthtml
 
-	echo "<BR><BR>BR><BR>BR><BR>BR><BR></BODY></HTML>" >>$reporthtml
+	echo "<BR><BR><BR><BR><BR></BODY></HTML>" >>$reporthtml
 
 fi
 
@@ -1422,7 +1422,7 @@ if [[ $Func = ON ]]; then
 		done
 	done
 
-	echo "<BR><BR><BR><BR>BR><BR><BR><BR></BODY></HTML>" >>$reporthtml
+	echo "<BR><BR><BR><BR><BR><BR><BR></BODY></HTML>" >>$reporthtml
 
 fi
 
